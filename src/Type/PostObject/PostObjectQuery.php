@@ -61,7 +61,7 @@ class PostObjectQuery {
 
 		return ! empty( self::$root_query[ $post_type_object->name ] ) ? self::$root_query[ $post_type_object->name ] : null;
 	}
-	
+
 	/**
 	 * Method that returns the "post_object_by" field definition to get a post object by id, postId or slug.
 	 *
@@ -94,6 +94,9 @@ class PostObjectQuery {
 					} elseif ( ! empty( $args['slug'] ) ) {
 						$slug        = esc_html( $args['slug'] );
 						$post_object = DataSource::get_post_object_by_uri( $slug, 'OBJECT', $post_type_object->name );
+					} elseif ( ! empty( $args['template'] ) ) {
+						$template    = esc_html( $args['template'] );
+						$post_object = DataSource::get_post_object_by_template( $template, 'OBJECT', $post_type_object->name );
 					}
 
 					if ( empty( $post_object ) || is_wp_error( $post_object ) ) {
@@ -138,6 +141,10 @@ class PostObjectQuery {
 				'uri' => [
 					'type'        => Types::string(),
 					'description' => sprintf( __( 'Get the %s by it\'s uri', 'wp-graphql' ), $post_type_object->graphql_single_name ),
+        ],
+        'template' => [
+					'type'        => Types::string(),
+					'description' => sprintf( __( 'Get the %s by it\'s template', 'wp-graphql' ), $post_type_object->graphql_single_name ),
 				]
 			];
 

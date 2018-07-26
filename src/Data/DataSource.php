@@ -764,5 +764,52 @@ class DataSource {
 
 		return null;
 
+  }
+
+  /**
+	 *
+	 *
+	 *
+	 * @param string $template
+	 * @param string $output    Optional. Output type; OBJECT*, ARRAY_N, or ARRAY_A.
+	 * @param string $post_type Optional. Post type; default is 'post'.
+	 *
+	 * @return \WP_Post|null WP_Post on success or null on failure
+	 */
+	public static function get_post_object_by_template( $template, $output = OBJECT, $post_type = 'post' ) {
+
+		if ( is_array( $post_type ) ) {
+			$cache_key = sanitize_key( $uri ) . '_' . md5( serialize( $post_type ) );
+		} else {
+			$cache_key = $post_type . '_' . sanitize_key( $template );
+		}
+		$post_id = wp_cache_get( $cache_key, 'get_post_object_by_template' );
+
+		if ( false === $post_id ) {
+      $args = [
+        'post_type'  => $post_type,
+        'meta_query' => [
+          [
+            'key'   => '_wp_page_template',
+            'value' => $template
+          ]
+        ]
+      ];
+
+      $posts = get_posts($args);
+
+      $post_id = !empty($posts) ? $posts[0]->ID : 0;
+			if ( 0 === $post_id ) {
+				wp_cache_set( $cache_key, $post_id, 'get_post_object_by_template', ( 1 * HOUR_IN_SECONDS + mt_rand( 0, HOUR_IN_SECONDS ) ) ); // We only store the ID to keep our footprint small
+			} else {
+				wp_cache_set( $cache_key, $post_id, 'get_post_object_by_template', 0 ); // We only store the ID to keep our footprint small
+			}
+		}
+
+ 		if ( $post_id ) {
+			return get_post( $post_id, $output );
+		}
+
+		return null;
 	}
 }
